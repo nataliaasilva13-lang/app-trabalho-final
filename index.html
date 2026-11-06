@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AURA OS — Assistente Robótico Inteligente</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#7c3aed">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside class="sidebar">
+            <div class="brand">
+                <i class="fa-solid fa-robot brand-icon"></i>
+                <h2>AURA <span>OS</span></h2>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-page="home"><i class="fa-solid fa-house"></i> Início</button>
+                <button class="nav-btn" data-page="chat"><i class="fa-solid fa-comments"></i> Conversar</button>
+                <button class="nav-btn" data-page="moves"><i class="fa-solid fa-gamepad"></i> Movimentos</button>
+                <button class="nav-btn" data-page="expressions"><i class="fa-solid fa-icons"></i> Expressões</button>
+                <button class="nav-btn" data-page="memory"><i class="fa-solid fa-brain"></i> Memória</button>
+                <button class="nav-btn" data-page="status"><i class="fa-solid fa-bolt"></i> Energia & Status</button>
+                <button class="nav-btn" data-page="settings"><i class="fa-solid fa-gear"></i> Configurações</button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="status-indicator online">
+                    <span class="dot"></span> ESP32 Conectado
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- PAGE 1: HOME -->
+            <section id="page-home" class="page-section active">
+                <header class="top-header">
+                    <h1>Bem-vindo ao AURA OS</h1>
+                    <p>Seu assistente robótico inteligente e amigável</p>
+                </header>
+                
+                <div class="hero-card">
+                    <div class="robot-avatar-container">
+                        <canvas id="canvas-robot-eyes" width="280" height="140"></canvas>
+                        <div class="avatar-glow"></div>
+                    </div>
+                    <div class="hero-controls">
+                        <p class="robot-status-text">Estado atual: <strong id="current-expression-label">Amigável (Normal)</strong></p>
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="switchPage('chat')"><i class="fa-solid fa-comment-dots"></i> Iniciar Conversa</button>
+                            <button class="btn btn-secondary" onclick="switchPage('expressions')"><i class="fa-solid fa-face-smile"></i> Mudar Expressão</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-access-grid">
+                    <div class="access-card" onclick="switchPage('chat')">
+                        <i class="fa-solid fa-comments card-icon"></i>
+                        <h3>Conversar</h3>
+                        <p>Interaja por texto ou comando de voz com IA</p>
+                    </div>
+                    <div class="access-card" onclick="switchPage('moves')">
+                        <i class="fa-solid fa-gamepad card-icon"></i>
+                        <h3>Movimentos</h3>
+                        <p>Controle direção, cabeça e braços articulados</p>
+                    </div>
+                    <div class="access-card" onclick="switchPage('expressions')">
+                        <i class="fa-solid fa-icons card-icon"></i>
+                        <h3>Expressões</h3>
+                        <p>Personalize os olhos digitais do AURA</p>
+                    </div>
+                    <div class="access-card" onclick="switchPage('memory')">
+                        <i class="fa-solid fa-brain card-icon"></i>
+                        <h3>Memória</h3>
+                        <p>Gerencie preferências e lembretes salvos</p>
+                    </div>
+                </div>
+
+                <div class="system-status-bar">
+                    <div class="status-item"><i class="fa-solid fa-wifi"></i> WiFi: <strong id="wifi-val">100% (-52 dBm)</strong></div>
+                    <div class="status-item"><i class="fa-solid fa-battery-three-quarters"></i> Bateria: <strong id="bat-val">84% (7.8V)</strong></div>
+                    <div class="status-item"><i class="fa-solid fa-microchip"></i> ESP32: <strong class="text-success">Operacional</strong></div>
+                </div>
+            </section>
+
+            <!-- PAGE 2: CHAT -->
+            <section id="page-chat" class="page-section">
+                <header class="top-header">
+                    <h1>Conversar com o AURA</h1>
+                    <p>Interação inteligente via IA com voz</p>
+                </header>
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="message aura-msg">
+                            <div class="msg-avatar"><i class="fa-solid fa-robot"></i></div>
+                            <div class="msg-body">
+                                <strong>AURA:</strong> Olá! Como posso ajudar você hoje? Pode me enviar um texto ou falar comigo!
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <button class="btn-mic" id="mic-btn" title="Falar por voz"><i class="fa-solid fa-microphone"></i></button>
+                        <input type="text" id="chat-input" placeholder="Digite uma mensagem...">
+                        <button class="btn btn-primary" id="send-btn"><i class="fa-solid fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 3: MOVEMENTS -->
+            <section id="page-moves" class="page-section">
+                <header class="top-header">
+                    <h1>Controle de Movimentos</h1>
+                    <p>Controles táticos por toque para telemóvel e PC</p>
+                </header>
+                <div class="moves-grid">
+                    <div class="panel d-pad-panel">
+                        <h3><i class="fa-solid fa-arrows-up-down-left-right"></i> Direção Principal</h3>
+                        <div class="d-pad">
+                            <button class="d-btn up" onclick="sendMove('FORWARD')"><i class="fa-solid fa-chevron-up"></i></button>
+                            <button class="d-btn left" onclick="sendMove('LEFT')"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button class="d-btn stop" onclick="sendMove('STOP')"><i class="fa-solid fa-hand"></i></button>
+                            <button class="d-btn right" onclick="sendMove('RIGHT')"><i class="fa-solid fa-chevron-right"></i></button>
+                            <button class="d-btn down" onclick="sendMove('BACKWARD')"><i class="fa-solid fa-chevron-down"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="panel servo-panel">
+                        <h3><i class="fa-solid fa-head-side-virus"></i> Cabeça & Braços</h3>
+                        <div class="slider-group">
+                            <label>Pan Cabeça: <span id="head-pan-val">90</span>°</label>
+                            <input type="range" id="head-pan" min="0" max="180" value="90" oninput="updateServo('head_pan', this.value)">
+                        </div>
+                        <div class="slider-group">
+                            <label>Tilt Cabeça: <span id="head-tilt-val">90</span>°</label>
+                            <input type="range" id="head-tilt" min="30" max="150" value="90" oninput="updateServo('head_tilt', this.value)">
+                        </div>
+                        <div class="slider-group">
+                            <label>Braço Esquerdo: <span id="arm-l-val">0</span>°</label>
+                            <input type="range" id="arm-l" min="0" max="180" value="0" oninput="updateServo('arm_l', this.value)">
+                        </div>
+                        <div class="slider-group">
+                            <label>Braço Direito: <span id="arm-r-val">0</span>°</label>
+                            <input type="range" id="arm-r" min="0" max="180" value="0" oninput="updateServo('arm_r', this.value)">
+                        </div>
+                    </div>
+
+                    <div class="panel presets-panel">
+                        <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Presets</h3>
+                        <div class="preset-buttons">
+                            <button class="btn btn-outline" onclick="sendPreset('WAVE')"><i class="fa-solid fa-hand-wave"></i> Acenar</button>
+                            <button class="btn btn-outline" onclick="sendPreset('DANCE')"><i class="fa-solid fa-music"></i> Dançar</button>
+                            <button class="btn btn-outline" onclick="sendPreset('NOD')"><i class="fa-solid fa-check"></i> Concordar</button>
+                            <button class="btn btn-outline" onclick="sendPreset('SHAKE')"><i class="fa-solid fa-xmark"></i> Negar</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 4: EXPRESSIONS -->
+            <section id="page-expressions" class="page-section">
+                <header class="top-header">
+                    <h1>Seletor de Expressões</h1>
+                    <p>Animações para a tela digital do AURA</p>
+                </header>
+                <div class="expressions-container">
+                    <div class="preview-display">
+                        <h3>Prévia da Tela</h3>
+                        <div class="tft-screen">
+                            <canvas id="canvas-expression-preview" width="240" height="120"></canvas>
+                        </div>
+                        <button class="btn btn-primary" onclick="applyExpression()"><i class="fa-solid fa-upload"></i> Enviar para Robô</button>
+                    </div>
+                    <div class="expressions-grid">
+                        <div class="exp-card active" onclick="selectExp('normal')"><i class="fa-solid fa-face-smile"></i> Normal</div>
+                        <div class="exp-card" onclick="selectExp('happy')"><i class="fa-solid fa-face-laugh-beam"></i> Feliz</div>
+                        <div class="exp-card" onclick="selectExp('curious')"><i class="fa-solid fa-face-rolling-eyes"></i> Curioso</div>
+                        <div class="exp-card" onclick="selectExp('surprised')"><i class="fa-solid fa-face-surprise"></i> Surpreso</div>
+                        <div class="exp-card" onclick="selectExp('thinking')"><i class="fa-solid fa-brain"></i> Pensando</div>
+                        <div class="exp-card" onclick="selectExp('listening')"><i class="fa-solid fa-ear-listen"></i> Ouvindo</div>
+                        <div class="exp-card" onclick="selectExp('talking')"><i class="fa-solid fa-comments"></i> Falando</div>
+                        <div class="exp-card" onclick="selectExp('sleeping')"><i class="fa-solid fa-moon"></i> Descanso</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 5: MEMORY -->
+            <section id="page-memory" class="page-section">
+                <header class="top-header">
+                    <h1>Memória do Assistente</h1>
+                    <p>Gerencie dados autorizados</p>
+                </header>
+                <div class="memory-container">
+                    <div class="add-memory-card">
+                        <h3>Adicionar Registro</h3>
+                        <div class="form-row">
+                            <input type="text" id="memory-key" placeholder="Chave (ex: Nome)">
+                            <input type="text" id="memory-val" placeholder="Valor (ex: Maria)">
+                            <button class="btn btn-primary" onclick="addMemory()"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div class="memory-list-card">
+                        <h3>Lembretes & Preferências</h3>
+                        <table class="memory-table">
+                            <thead>
+                                <tr>
+                                    <th>Chave</th>
+                                    <th>Conteúdo</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="memory-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 6: STATUS -->
+            <section id="page-status" class="page-section">
+                <header class="top-header">
+                    <h1>Energia & Telemetria</h1>
+                </header>
+                <div class="status-grid">
+                    <div class="stat-card">
+                        <i class="fa-solid fa-battery-full stat-icon"></i>
+                        <div><h4>Bateria</h4><p class="stat-val">84% (7.8V)</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-wifi stat-icon"></i>
+                        <div><h4>Wi-Fi</h4><p class="stat-val">-52 dBm</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE 7: SETTINGS -->
+            <section id="page-settings" class="page-section">
+                <header class="top-header">
+                    <h1>Configurações</h1>
+                </header>
+                <div class="settings-container">
+                    <div class="panel">
+                        <h3><i class="fa-solid fa-network-wired"></i> Endereço ESP32</h3>
+                        <div class="form-group">
+                            <input type="text" id="esp32-ip" value="192.168.1.105">
+                        </div>
+                        <button class="btn btn-secondary" onclick="saveSettings()">Salvar</button>
+                    </div>
+                    <div class="panel">
+                        <h3><i class="fa-solid fa-mobile-screen-button"></i> Modo Aplicação (PWA)</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">Adicione este site à ecrã principal do telemóvel para usar como um app nativo.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar (Telemóvel / Celular) -->
+    <nav class="mobile-nav">
+        <button class="mob-btn active" data-page="home" onclick="switchPage('home')"><i class="fa-solid fa-house"></i><span>Início</span></button>
+        <button class="mob-btn" data-page="chat" onclick="switchPage('chat')"><i class="fa-solid fa-comments"></i><span>Chat</span></button>
+        <button class="mob-btn" data-page="moves" onclick="switchPage('moves')"><i class="fa-solid fa-gamepad"></i><span>Controle</span></button>
+        <button class="mob-btn" data-page="expressions" onclick="switchPage('expressions')"><i class="fa-solid fa-icons"></i><span>Rosto</span></button>
+        <button class="mob-btn" data-page="settings" onclick="switchPage('settings')"><i class="fa-solid fa-gear"></i><span>Ajustes</span></button>
+    </nav>
+
+    <script src="js/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Registration Failed', err));
+        }
+    </script>
+</body>
+</html>
